@@ -1,5 +1,6 @@
 class ImageController < ApplicationController
   require 'open-uri'
+  require 'mini_magick'
   before_filter :get_file
 
   @image
@@ -14,6 +15,12 @@ class ImageController < ApplicationController
   def get_file
     @file = open(get_image)
     @image = @file.read
+
+    mm_image = MiniMagick::Image.read(@file)
+
+    mm_image.resize("#{params[:width]}x#{params[:height]}")
+
+    abort mm_image['width']
   end
 
   private
