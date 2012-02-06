@@ -15,7 +15,7 @@ class ImageController < ApplicationController
   private
 
   def getters
-    ['pug','placeholder','kitten']
+    ['pug','placeholder','kitten','zombie']
   end
 
   def get_image
@@ -63,6 +63,13 @@ class ImageController < ApplicationController
   def get_babe
     #THIS HAS TO HAPPEN
     raise ActiveRecord::RecordNotFound
+  end
+
+  def get_zombie
+    google_results = JSON.parse(open("http://ajax.googleapis.com/ajax/services/search/images?v=1.0&rsz=8&q=zombie").read)
+    @file = open(google_results['responseData']['results'][rand(8).floor]['unescapedUrl'])
+    @image = MiniMagick::Image.read(@file.read)
+    resize_image
   end
 
   def file_extension_of(mime_string)
