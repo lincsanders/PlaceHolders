@@ -3,11 +3,11 @@ class ImageController < ApplicationController
   require 'mini_magick'
   before_filter :get_image
 
+  @url
   @image
-  @file
 
   def generate
-    send_data @image.to_blob, :type => file_extension_of(@file.content_type), :filename => "#{params[:width]}x#{params[:height]}.#{file_extension_of(@file.content_type)}", :disposition => 'inline'
+    send_data @image.image_blob, :type => file_extension_of(@image.content_type), :filename => "#{params[:width]}x#{params[:height]}.#{file_extension_of(@image.content_type)}", :disposition => 'inline'
   end
 
   private
@@ -19,56 +19,56 @@ class ImageController < ApplicationController
   def get_image
     if getters.include? params[:type]
       self.method("get_#{params[:type]}").call
+    elsif params[:type] == "random"
+      self.method("get_#{getters[rand(getters.length)]}").call
     else
       raise ActiveRecord::RecordNotFound
     end
   end
 
-  def resize_image
+  def resize_image(image)
     width = params['width'].to_f
     height = params['height'].to_f
 
-    @image.geometry("#{width}x#{height}^")
+    image.geometry("#{width}x#{height}^")
 
-    if @image[:height] > height
-      remove = ((@image[:height] - height) / 2).floor
-      @image.shave("0x#{remove}")
-    elsif @image[:width] > width
-      remove = ((@image[:width] - width) / 2).floor
-      @image.shave("#{remove}x0")
+    if image[:height] > height
+      remove = ((image[:height] - height) / 2).floor
+      image.shave("0x#{remove}")
+    elsif image[:width] > width
+      remove = ((image[:width] - width) / 2).floor
+      image.shave("#{remove}x0")
     end
 
     #Finally, make super sure the dimensions fit perfectly
-    @image.extent("#{width}x#{height}")
+    image.extent("#{width}x#{height}")
+
+    return image
   end
 
   def get_pug
-    @file = open(JSON.parse(open("http://pugme.herokuapp.com/random").read)['pug'])
-    @image = MiniMagick::Image.read(@file.read)
-    resize_image
+    get_and_open JSON.parse(open("http://pugme.herokuapp.com/random").read)['pug']
   end
 
   def get_placeholder
-    @file = open("http://placehold.it/#{params[:width]}x#{params[:height]}")
-    @image = MiniMagick::Image.read(@file.read)
+    get_and_open "http://placehold.it/#{params[:width]}x#{params[:height]}"
   end
 
   def get_kitten
-    @file = open("http://placekitten.com/#{params[:width]}/#{params[:height]}")
-    @image = MiniMagick::Image.read(@file.read)
+    get_and_open "http://placekitten.com/#{params[:width]}/#{params[:height]}"
   end
 
   def get_babe
     # Basically an amalgamation of the first few image searches for terms like "babe", "sexy"
     # NEED MOAR
     babes = [
-      "http://www.hondosackett.com/Fernando/GsG/denise-milani-swimsuit.jpg",
       "http://i2.listal.com/image/2994929/600full-denise-milani.jpg",
       "http://www.jpegwallpapers.com/images/wallpapers/Babe-20-782839.jpeg",
       "http://www.wallpapers-football.net/babes/photos/football-babes31.jpg",
       "http://www.motorcycle.com/images/babes/babes_oct07_jem_02.jpg",
       "http://www.wallpaperweb.org/wallpaper/babes/1280x1024/Babe010.jpg",
       "http://www3.telus.net/aukkonen/HDBabeWalls/files/page0-1000-full.jpg",
+      "http://www.hondosackett.com/Fernando/GsG/denise-milani-swimsuit.jpg",
       "http://2.bp.blogspot.com/_XmYwA_GdPeo/TJKcvCGlA2I/AAAAAAAAJ9M/7Bz5lkgFwLA/s1600/miranda-kerr-swim-0310-4.jpg",
       "http://img.jesper.nu/view/6819/miranda-kerr-0111-05.jpg",
       "http://blog.modelmanagement.com/library/uploads/alexandra-ambrosia-for-victorias-secret-catalouge-20091.jpg",
@@ -93,22 +93,36 @@ class ImageController < ApplicationController
       "http://3.bp.blogspot.com/-76wqSGJhDLw/Th3h9Tt9NbI/AAAAAAAAH94/CaLiZPawcno/s1600/Sexy+Image+singles.jpg",
     ]
 
-    @file = open(babes[rand babes.length])
-    @image = MiniMagick::Image.read(@file.read)
-    resize_image
+    get_and_open babes[rand babes.length]
   end
   
   def get_falukorv
-    @file = open(bing_image_search 'falukorv')
-    @image = MiniMagick::Image.read(@file.read)
-    resize_image
+    get_and_open bing_image_search 'falukorv'
   end
 
   def get_zombie
-    @file = open(bing_image_search 'zombies')
-    @image = MiniMagick::Image.read(@file.read)
-    resize_image
+    get_and_open bing_image_search 'zombies'
   end
+
+  def get_and_open(url)
+    @url = url
+
+    if !@image = Image.where({:url => @url, :width => params[:width].to_s, :height => params[:height].to_s}).first
+      file = open(@url)
+      mmimage = resize_image MiniMagick::Image.read(file.read)
+
+      image = Image.new
+      image.url = @url
+      image.width = params[:width].to_s
+      image.height = params[:height].to_s
+      image.image_blob = mmimage.to_blob
+      image.content_type = file.content_type
+      image.save
+      @image = image
+    end
+  end
+
+  # Search functions
 
   def bing_image_search(query)
     #Lets me pick from the first 250 images instead of the first 50
@@ -126,6 +140,7 @@ class ImageController < ApplicationController
     google_results['responseData']['results'][rand(8).floor]['unescapedUrl']
   end
 
+  #Extra...
   def file_extension_of(mime_string)
     return $1 if mime_string =~ /(\w+)$/
   end
