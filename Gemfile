@@ -25,3 +25,4 @@ end
 
 gem 'heroku'
 gem 'mini_magick'
+gem 'newrelic_rpm'
