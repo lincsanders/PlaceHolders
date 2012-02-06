@@ -1,3 +1,3 @@
 PlaceHoldIt::Application.routes.draw do
-  match ':width/:height/:type' => 'image#generate'
+  match ':type/(:width)x(:height)' => 'image#generate'
 end

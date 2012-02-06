@@ -24,4 +24,4 @@ group :development do
 end
 
 gem 'heroku'
-gem 'tupalo-mini_magick'
+gem 'mini_magick'

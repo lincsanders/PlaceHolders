@@ -1,1 +1,7 @@
-A random placeholder image amalgamator and resizer. Usage: placeholdit.herokuapp.com/:width/:height:/:type
+A random placeholder image amalgamator and resizer. Usage: placeholdit.herokuapp.com/:type/(:width)x(:height)
+
+This was inspired by, and uses the following image services (Expect this list to grow):
+
+http://pugme.herokuapp.com/
+http://placekitten.com/
+http://placehold.it/
