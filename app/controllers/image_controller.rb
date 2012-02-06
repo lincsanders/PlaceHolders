@@ -12,10 +12,8 @@ class ImageController < ApplicationController
 
   private
 
-  private
-
   def getters
-    ['pug','placeholder','kitten','zombie', 'babe']
+    ['pug','placeholder','kitten','zombie', 'babe', 'falukorv']
   end
 
   def get_image
@@ -61,7 +59,16 @@ class ImageController < ApplicationController
   end
 
   def get_babe
+    # Basically an amalgamation of the first few image searches for terms like "babe", "sexy"
+    # NEED MOAR
     babes = [
+      "http://www.hondosackett.com/Fernando/GsG/denise-milani-swimsuit.jpg",
+      "http://i2.listal.com/image/2994929/600full-denise-milani.jpg",
+      "http://www.jpegwallpapers.com/images/wallpapers/Babe-20-782839.jpeg",
+      "http://www.wallpapers-football.net/babes/photos/football-babes31.jpg",
+      "http://www.motorcycle.com/images/babes/babes_oct07_jem_02.jpg",
+      "http://www.wallpaperweb.org/wallpaper/babes/1280x1024/Babe010.jpg",
+      "http://www3.telus.net/aukkonen/HDBabeWalls/files/page0-1000-full.jpg",
       "http://2.bp.blogspot.com/_XmYwA_GdPeo/TJKcvCGlA2I/AAAAAAAAJ9M/7Bz5lkgFwLA/s1600/miranda-kerr-swim-0310-4.jpg",
       "http://img.jesper.nu/view/6819/miranda-kerr-0111-05.jpg",
       "http://blog.modelmanagement.com/library/uploads/alexandra-ambrosia-for-victorias-secret-catalouge-20091.jpg",
@@ -85,18 +92,38 @@ class ImageController < ApplicationController
       "http://www.pulsarmedia.ro/data/media/19/Nikki%20Visser%201024X768%202822%20Sexy%20Wallpaper.jpg",
       "http://3.bp.blogspot.com/-76wqSGJhDLw/Th3h9Tt9NbI/AAAAAAAAH94/CaLiZPawcno/s1600/Sexy+Image+singles.jpg",
     ]
-    #NEED MOOOOOOAR
-    
+
     @file = open(babes[rand babes.length])
+    @image = MiniMagick::Image.read(@file.read)
+    resize_image
+  end
+  
+  def get_falukorv
+    @file = open(bing_image_search 'falukorv')
     @image = MiniMagick::Image.read(@file.read)
     resize_image
   end
 
   def get_zombie
-    google_results = JSON.parse(open("http://ajax.googleapis.com/ajax/services/search/images?v=1.0&rsz=8&q=zombie").read)
-    @file = open(google_results['responseData']['results'][rand(8).floor]['unescapedUrl'])
+    @file = open(bing_image_search 'zombies')
     @image = MiniMagick::Image.read(@file.read)
     resize_image
+  end
+
+  def bing_image_search(query)
+    #Lets me pick from the first 250 images instead of the first 50
+    offset = (rand(5) * 50).floor + 1
+    
+    results = JSON.parse(open("http://api.bing.net/json.aspx?Appid=#{ENV['BING_APP_ID']}&query=#{query}&sources=image&image.count=50&image.offset=#{offset}").read)
+    results = results['SearchResponse']['Image']['Results']
+
+    results[rand(results.length)]['MediaUrl']
+  end
+
+  # Just learnt that this is actually deprecated... Gee thanks, google. I decided to leave in how I did this anyway, just in case
+  def google_image_search(query)
+    google_results = JSON.parse(open("http://ajax.googleapis.com/ajax/services/search/images?v=1.0&rsz=8&q=#{query}").read)
+    google_results['responseData']['results'][rand(8).floor]['unescapedUrl']
   end
 
   def file_extension_of(mime_string)
