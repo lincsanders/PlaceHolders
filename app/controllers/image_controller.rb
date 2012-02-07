@@ -12,9 +12,7 @@ class ImageController < ApplicationController
 
   private
 
-  def getters
-    ['pug','placeholder','kitten','zombie', 'babe', 'falukorv']
-  end
+  #Getters? You best be finding them in the ApplicationController, you previous level n00b!
 
   def get_image
     if getters.include? params[:type]
@@ -62,6 +60,16 @@ class ImageController < ApplicationController
     # Basically an amalgamation of the first few image searches for terms like "babe", "sexy"
     # NEED MOAR
     babes = [
+      "http://3.bp.blogspot.com/-J_ivgOA89BQ/TefGutjGiEI/AAAAAAAAAcE/whXQEgteWAA/s1600/lingerie-3438.jpg",
+      "http://ist1-2.filesor.com/media/image/4/0/2/9/40296/9/c/6/4/Cotton_Club-Lingerie_2010_16.jpg",
+      "http://www.mywebpower.com/graphics/media/celebrities/megan-fox-lingerie.jpg",
+      "http://luxatic.com/wp-content/uploads/2010/09/Candice-Swanepoel-VS-Lingerie-12.jpg",
+      "http://f.imagehost.org/0987/francoise_boufhal_16.jpg",
+      "http://yepyep.gibbs12.com/wp-content/uploads/2009/06/lisa_gleave26.jpg",
+      "http://guyism.com/wp-content/uploads/Marisol_Gonzalez_00031.jpg",
+      "http://www.ecardmedia.eu/data/media/19/Autumn%20Reeser%201920X1200%2031437%20Sexy%20Wallpaper.jpg",
+      "http://www.lookpictures.net/photos/registered_photos/7145-anna-kournikova-sexy.jpg",
+      "http://3.bp.blogspot.com/_AkiEEqkfKUE/TUCM6veWt2I/AAAAAAAABAs/y4p1gpDwu0c/s1600/bikini14.jpg",
       "http://i2.listal.com/image/2994929/600full-denise-milani.jpg",
       "http://www.jpegwallpapers.com/images/wallpapers/Babe-20-782839.jpeg",
       "http://www.wallpapers-football.net/babes/photos/football-babes31.jpg",
